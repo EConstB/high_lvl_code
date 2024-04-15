@@ -4,7 +4,7 @@ import asyncio
 import random
 
 
-class Robot:
+class RobotController:
     def __init__(self) -> None:
         self.battery = BatteryUnit(36.00, 28.00)
 
@@ -14,7 +14,7 @@ class Robot:
                                  DistanceSensorUnit(4)]
 
 
-robot = Robot()
+robot = RobotController()
 battery = robot.battery
 ds = robot.distance_sensors
 curr_val = battery.bat_max_volt
