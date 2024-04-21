@@ -4,7 +4,6 @@ class DistanceSensorUnit(RobotParameters.DistanceSensor):
 
     def __init__(self, name_ds) -> None:
         super().__init__(num_name=name_ds)
-        self.name = name_ds
         self.max_distance_ds = None
         self.min_distance_ds = None
         self.cur_value_ds = None
