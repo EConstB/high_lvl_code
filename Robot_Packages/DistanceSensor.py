@@ -1,6 +1,5 @@
 from Robot_Packages.Robot_state_parameters import RobotParameters
 
-
 class DistanceSensorUnit(RobotParameters.DistanceSensor):
 
     def __init__(self, name_ds) -> None:

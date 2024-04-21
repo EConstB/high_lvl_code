@@ -20,7 +20,7 @@ class BatteryUnit(RobotParameters.Battery):
         self.bat_curr_volt = curr_value
         return self.bat_curr_volt
 
-    def battery_monitoring(self):
+    def get_percent_val(self):
         delta_min_max = self.bat_max_volt - self.bat_min_volt
         curr_delta_min = self.bat_curr_volt - self.bat_min_volt
         self.bat_percent_value = (curr_delta_min / delta_min_max) * 100
