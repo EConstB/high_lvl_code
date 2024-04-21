@@ -5,9 +5,6 @@ class RobotController:
     def __init__(self) -> None:
         self.msys = MonitoringSystem()
         self.bat = self.msys.bat
-        self.bat.bat_max_volt = 36.00
-        self.bat.bat_min_volt = 28.00
-        self.bat.bat_curr_volt = None
         self.ds_sens = self.msys.dist_sensors
 
 

@@ -6,13 +6,13 @@ class RobotParameters:
     class Battery:
         bat_max_volt: float = 36.0  # example -> 36.00 is MAX (V)
         bat_min_volt: float = 28.0  # example -> 32.00 is MIN (V)
-        bat_curr_volt: float  # example  -> 34.64 is current (V)
+        bat_curr_volt: float  
 
         bat_max_capacity: float = 12.0 # example -> 6 Ah is MAX (Ah)
         bat_min_capacity: float = 0.0 # example -> 0 Ah is MIN (Ah)
-        bat_curr_capacity: float  # example -> 3.65 Ah is current (Ah)
+        bat_curr_capacity: float  
 
-        bat_percent_value: float  # example -> percents is 34 (%)
+        bat_percent_value: float 
 
         class ConfigBattery:
             parallel_connection: int = 4
