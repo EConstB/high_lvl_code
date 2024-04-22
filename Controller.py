@@ -5,7 +5,7 @@ class RobotController:
     def __init__(self) -> None:
         self.msys = MonitoringSystem()
         self.bat = self.msys.bat
-        self.ds_sens = self.msys.dist_sensors
+        self.ds_sens = self.msys.distance_sensors
 
 
 robot = RobotController()
@@ -14,8 +14,9 @@ battery.bat_curr_volt = battery.bat_max_volt
 
 async def bat_testing():
     while True:
-        battery.bat_curr_volt -= 0.8
-        await asyncio.sleep(1)
+        battery.bat_curr_volt += float(input('Enter your info: '))
+        #battery.bat_curr_volt -= 0.12
+        await asyncio.sleep(0.6)
 
 async def main():
     tasks = [ bat_testing(),

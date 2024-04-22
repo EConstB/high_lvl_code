@@ -1,68 +1,79 @@
 from Robot_Packages.BatterySolver import BatteryUnit
 from Robot_Packages.DistanceSensor import DistanceSensorUnit
 from Robot_Packages.Robot_state_parameters import RobotParameters as rb
+import colorama
+from colorama import Fore, Style
 import asyncio
 import random
 
 class MonitoringSystem:
+    
     def __init__(self) -> None:
+        colorama.init(autoreset=True)
+        # Initialize the battery unit with max and min voltage from the robot parameters
         self.bat = BatteryUnit(rb.Battery.bat_max_volt, rb.Battery.bat_min_volt)
+        # Initialize the distance sensors array with the specified number
         self.distance_sensors = self.init_ds(4)
+        # Create an asyncio Event to manage the stopping of sensors based on battery level
         self.stop_event = asyncio.Event()
-        self.resume_event = asyncio.Event()
+        # Flag to keep track of whether tasks should be running
         self.running_tasks = True
 
-    def init_ds(self, qnt):
-        return [DistanceSensorUnit(ds_unit) for ds_unit in range(qnt)]
-
-    async def shutdown(self):
-        print("Shutting down sensors and other components, robot is going to sleep")
-        for task in self.tasks:
-            task.cancel()
-        # Here you could reset the events if you plan to restart tasks in future
-        self.stop_event.clear()
-        self.resume_event.set()
+    def init_ds(self, quantity):
+        # Create a list of distance sensor units
+        return [DistanceSensorUnit(i) for i in range(quantity)]
 
     async def bat_monitoring(self):
+        # Continuously monitor the battery percentage
         while True:
             self.bat.bat_percent_value = self.bat.get_percent_val()
-            print('bat_monitoring in progress', f'{self.bat.bat_percent_value:.2f}')
-            
+            if self.running_tasks:
+                print(f'{Fore.YELLOW}Battery monitoring in progress {self.bat.bat_percent_value:.2f}%')
+            # Check if battery level is critically low and if tasks are currently running
             if self.bat.bat_percent_value < 2 and self.running_tasks:
-                print("Battery critically low. We die, capitan.")
-                self.stop_event.set()
-                self.resume_event.clear()
+                print(f"{Fore.RED}Battery critically low. System shutdown initiated.")
                 self.running_tasks = False
-            
-            elif self.bat.bat_percent_value >= 2 and not self.running_tasks:
-                print("Battery level recovered. Resuming operations.")
-                self.resume_event.set()
-                self.stop_event.clear()
+                self.stop_event.set()
+            # Check if battery level has recovered and if tasks are not running
+            elif self.bat.bat_percent_value >= 5 and not self.running_tasks:
+                print(f"{Fore.GREEN}Battery level recovered. Restarting system.")
                 self.running_tasks = True
+                self.stop_event.clear()
+                await self.restart_tasks()
 
             await asyncio.sleep(1)
 
     async def ds_monitoring(self):
-        while True:
+        # Monitor distance sensors unless the stop event is set
+        try:
             while not self.stop_event.is_set():
-                print('TOF sensors monitoring in progress', random.randint(20, 200))
+                print(f'{Fore.CYAN}TOF sensors monitoring in progress {random.randint(2, 100)}')
                 await asyncio.sleep(0.2)
-                
-                await self.stop_event.wait()
-                print("Monitoring paused due to low battery.")
-                
-                await self.resume_event.wait()
-                print("Resuming TOF sensors monitoring.")
-            
+        except asyncio.CancelledError:
+            print(f"{Fore.MAGENTA}TOF sensors monitoring task was cancelled.")
+
+    async def restart_tasks(self):
+        # Restart distance sensor monitoring task if it has completed (either normally or due to cancellation)
+        if self.ds_task.done():
+            self.ds_task = asyncio.create_task(self.ds_monitoring())
+
     async def task_launch(self):
-        self.tasks = [
-            asyncio.create_task(self.bat_monitoring()),
-            asyncio.create_task(self.ds_monitoring())
-        ]
-        
-        # Wait for the tasks to finish, which in this setup, they should only do so upon cancellation
-        await asyncio.gather(*self.tasks, return_exceptions=True)
+        # Launch battery and distance sensor monitoring tasks
+        self.bat_task = asyncio.create_task(self.bat_monitoring())
+        self.ds_task = asyncio.create_task(self.ds_monitoring())
+
+        # Await the battery monitoring task to complete
+        await self.bat_task 
+        # If the distance sensor task is not yet done, cancel it
+        if not self.ds_task.done():
+            self.ds_task.cancel()
+        # Await the distance sensor task to handle cancellation properly
+        await self.ds_task
 
     def running(self):
+        # Run the main task launching function within an asyncio event loop
         asyncio.run(self.task_launch())
 
+if __name__ == "__main__":
+    system = MonitoringSystem()
+    system.running()

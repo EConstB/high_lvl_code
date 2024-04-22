@@ -19,4 +19,6 @@ class BatteryUnit(RobotParameters.Battery):
         delta_min_max = self.bat_max_volt - self.bat_min_volt
         curr_delta_min = self.bat_curr_volt - self.bat_min_volt
         self.bat_percent_value = (curr_delta_min / delta_min_max) * 100
+        self.bat_percent_value = 100 if self.bat_percent_value >= 100 else self.bat_percent_value
+        self.bat_percent_value = 0 if self.bat_percent_value <= 0 else self.bat_percent_value
         return self.bat_percent_value
