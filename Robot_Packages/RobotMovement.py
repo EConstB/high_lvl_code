@@ -2,6 +2,8 @@ import keyboard
 import time
 import colorama
 from colorama import Fore
+
+
 class RobotMovement:
     def __init__(self):
         colorama.init(autoreset=True)
@@ -13,10 +15,12 @@ class RobotMovement:
         self.acceleration_rate = 400  # Speed change per update
         self.rotation_rate = 200  # Rotation change per update
 
+
     def create_cmd(self):
         # Command format showing speed and rotation direction with angle
         cmd_str = f'Sd{self.straight_dir}s{abs(self.straight_speed)}Rr{self.rot_dir}a{abs(self.rot_angle)}'
         return cmd_str
+
 
     def teleOp(self):
         print(f"{Fore.GREEN}Control the robot with keyboard.")

@@ -1,7 +1,5 @@
 from Robot_Packages.RobotMonitoring import MonitoringSystem
-from Robot_Packages.RobotMovement import RobotMovement
 import asyncio
-import time
 from multiprocessing import Process
 
 class RobotController:
@@ -17,10 +15,10 @@ battery.bat_curr_volt = battery.bat_max_volt
 async def bat_testing():
     while True:
         battery.bat_curr_volt -=0.12
-        await asyncio.sleep(0.6)
+        await asyncio.sleep(2)
 
 async def main_async():
-    tasks = [bat_testing(), robot.msys.task_launch()]
+    tasks = [bat_testing(), robot.msys.task_run(1)]
     await asyncio.gather(*tasks)
 
 def main():
