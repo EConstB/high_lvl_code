@@ -42,6 +42,7 @@ class RobotMovement:
 
                 if keyboard.is_pressed('w'):
                     self.straight_speed = min(4000, self.straight_speed + speed_change)
+                    
                 elif keyboard.is_pressed('s'):
                     self.straight_speed = max(-4000, self.straight_speed - speed_change)
 
@@ -50,20 +51,23 @@ class RobotMovement:
                     if last_rotation != "Left":
                         last_rotation = "Left"
                         self.rot_angle = self.rot_angle
+
                     if  self.rot_angle > -360:
                         self.rot_angle = (self.rot_angle - rotation_change)
-                    else:
-                        self.rot_angle = -360
+                    else: self.rot_angle = -360
+
                 elif keyboard.is_pressed('d'):
                     if last_rotation != "Right":
                         last_rotation = "Right"
                         self.rot_angle = self.rot_angle
+
                     if self.rot_angle < 360:
                         self.rot_angle = (self.rot_angle + rotation_change)
-                    else:
-                        self.rot_angle = 360
+                    else: self.rot_angle = 360
+
                 elif not keyboard.is_pressed('a') and not keyboard.is_pressed('d'):
                     last_rotation = "None"
+
 
                 if keyboard.is_pressed('space'):
                     # Reset rotation and speed
@@ -72,6 +76,7 @@ class RobotMovement:
                     self.straight_speed = 0
                     self.straight_dir = 0
 
+
                 if self.straight_speed > 0:
                     self.straight_dir = 1
                 elif self.straight_speed < 0:
@@ -79,6 +84,7 @@ class RobotMovement:
                 else:
                     self.straight_dir = 0
                 
+
                 if self.rot_angle > 0:
                     self.rot_dir = 1
                 elif self.rot_angle < 0:
@@ -86,13 +92,12 @@ class RobotMovement:
                 else:
                     self.rot_dir = 0
                 
+
                 # Update the last time
                 self.last_update_time = current_time
                 time.sleep(0.05)
                 # Display command string
                 print(f"{Fore.YELLOW}DIR {self.straight_dir} SPEED {self.straight_speed:5d}{Fore.GREEN} ROTDIR {self.rot_dir} ANGLE {self.rot_angle:4d}", end='\r')
-
-
                 if keyboard.is_pressed('esc'):
                     print(f"{Fore.RED}\nExiting...")
                     break

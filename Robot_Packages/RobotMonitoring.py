@@ -2,7 +2,7 @@ from Robot_Packages.BatterySolver import BatteryUnit
 from Robot_Packages.DistanceSensor import DistanceSensorUnit
 from Robot_Packages.Robot_state_parameters import RobotParameters as rb
 import colorama
-from colorama import Fore, Style
+from colorama import Fore
 import asyncio
 import random
 
@@ -29,12 +29,15 @@ class MonitoringSystem:
     async def bat_monitoring(self):
         # Continuously monitor the battery percentage
         while True:
+            
             self.bat.bat_percent_value = self.bat.get_percent_val()
+
             # Check if battery level is critically low and if tasks are currently running
             if self.bat.bat_percent_value < 2 and self.running_tasks:
                 print(f"{Fore.RED}Battery critically low. System shutdown initiated.")
                 self.running_tasks = False
                 self.stop_event.set()
+
             # Check if battery level has recovered and if tasks are not running
             elif self.bat.bat_percent_value >= 5 and not self.running_tasks:
                 print(f"{Fore.GREEN}Battery level recovered. Restarting system.")
@@ -49,19 +52,27 @@ class MonitoringSystem:
         # Monitor distance sensors unless the stop event is set
         try:
             while not self.stop_event.is_set():
+
+                # it's emulated of getting data from ds with random values
                 for dsunit in self.distance_sensors:
                     dsunit.cur_value_ds = random.randint(2, 100)
+
                 await asyncio.sleep(0.2)
+
         except asyncio.CancelledError:
             print(f"{Fore.MAGENTA}TOF sensors monitoring task was cancelled.")
 
 
     async def monsys(self):
+
         while True:
             print(f'Bat:{self.bat.bat_percent_value:.2f}%', end=' ')
+
             for dsunit in self.distance_sensors:
                 print(f'DS{dsunit.name}:{dsunit.cur_value_ds}', end=' ')
+
             print(end='\r')
+
             await asyncio.sleep(0.5)
 
 
@@ -78,7 +89,7 @@ class MonitoringSystem:
 
         if print_values == 1:
             self.monsys_task = asyncio.create_task(self.monsys())
-            
+
         # Await the battery monitoring task to complete
         await self.bat_task 
         # If the distance sensor task is not yet done, cancel it
