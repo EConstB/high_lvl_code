@@ -1,4 +1,5 @@
 from Robot_Packages.RobotMonitoring import MonitoringSystem
+from Robot_Packages.RobotMovement import RobotMovement
 import asyncio
 import time
 from multiprocessing import Process
@@ -8,9 +9,6 @@ class RobotController:
         self.msys = MonitoringSystem()
         self.bat = self.msys.bat
         self.ds_sens = self.msys.distance_sensors
-
-    def say_name_tst(self):
-        return "I'm Robot"
 
 robot = RobotController()
 battery = robot.bat
@@ -27,22 +25,12 @@ async def main_async():
 
 def main():
     asyncio.run(main_async())
-
-def test_mlt():
-    while True:
-        print(robot.say_name_tst())
-        time.sleep(1)
-        
+       
 
 if __name__ == '__main__':
     # Creating separate processes
     p1 = Process(target=main)
-    p2 = Process(target=test_mlt)
-
     # Starting the processes
     p1.start()
-    p2.start()
-
     # Joining the processes to ensure they complete execution
     p1.join()
-    p2.join()
