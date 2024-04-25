@@ -1,13 +1,18 @@
-from Robot_Packages.RobotMonitoring import MonitoringSystem
 import asyncio
-from multiprocessing import Process, Queue
-
+from Robot_Packages.RobotMonitoring import MonitoringSystem
+import os
+import sys
 class RobotController:
-    def __init__(self, queue) -> None:
+    def __init__(self, host, port) -> None:
         self.msys = MonitoringSystem()
         self.bat = self.msys.bat
-        self.queue = queue
         self.bat.bat_curr_volt = 36
+        self.host = host
+        self.port = port
+
+    async def connect(self):
+        self.reader, self.writer = await asyncio.open_connection(self.host, self.port)
+        self.writer.write("0_MS".encode())
 
     async def bat_testing(self):
         while True:
@@ -15,12 +20,20 @@ class RobotController:
             await asyncio.sleep(2)
 
     async def monsys_solver(self):
-        async for msg in self.msys.monsys():
-            self.queue.put(msg)
-        self.queue.put(None)  # Сигнал о завершении
+        try:
+            async for msg in self.msys.monsys():
+                self.writer.write(str(msg).encode())
+                await self.writer.drain()
+                print(f"Process with pid", os.getpid(), f"Send pckg {sys.getsizeof(msg)} bytes")
+        finally:
+            self.writer.write("END".encode())
+            await self.writer.drain()
+            self.writer.close()
+            await self.writer.wait_closed()
 
-async def main_async(queue):
-    robot = RobotController(queue)
+async def main_async(host, port):
+    robot = RobotController(host, port)
+    await robot.connect()
     tasks = [
         robot.bat_testing(),
         robot.msys.task_run(),
@@ -28,14 +41,10 @@ async def main_async(queue):
     ]
     await asyncio.gather(*tasks)
 
-def process_main(queue):
-    asyncio.run(main_async(queue))
-
 def main():
-    queue = Queue()
-    p = Process(target=process_main, args=(queue,))
-    p.start()
-    p.join()
+    host = 'localhost'
+    port = 8888
+    asyncio.run(main_async(host, port))
 
 if __name__ == "__main__":
     main()

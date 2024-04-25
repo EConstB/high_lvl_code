@@ -97,7 +97,8 @@ class RobotMovement:
                 self.last_update_time = current_time
                 time.sleep(0.05)
                 # Display command string
-                print(f"{Fore.YELLOW}DIR {self.straight_dir} SPEED {self.straight_speed:5d}{Fore.GREEN} ROTDIR {self.rot_dir} ANGLE {self.rot_angle:4d}", end='\r')
+                yield [self.straight_dir, self.straight_speed, self.rot_dir, self.rot_angle]
+                #print(f"{Fore.YELLOW}DIR {self.straight_dir} SPEED {self.straight_speed:5d}{Fore.GREEN} ROTDIR {self.rot_dir} ANGLE {self.rot_angle:4d}", end='\r')
                 if keyboard.is_pressed('esc'):
                     print(f"{Fore.RED}\nExiting...")
                     break
