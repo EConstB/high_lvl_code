@@ -14,6 +14,10 @@ class RobotParameters:
 
         bat_percent_value: float 
 
+        class state:
+            normal: int = 1
+            ctit_low: int = 0
+
         class ConfigBattery:
             parallel_connection: int = 4
             serial_connection: int = 10

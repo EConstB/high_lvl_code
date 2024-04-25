@@ -10,9 +10,9 @@ class MonitoringSystem:
     
 
     def __init__(self) -> None:
-        colorama.init(autoreset=True)
         # Initialize the battery unit with max and min voltage from the robot parameters
         self.bat = BatteryUnit(rb.Battery.bat_max_volt, rb.Battery.bat_min_volt)
+        self.bat_state = rb.Battery.state.normal
         # Initialize the distance sensors array with the specified number
         self.distance_sensors = self.init_ds(4)
         # Create an asyncio Event to manage the stopping of sensors based on battery level
@@ -34,13 +34,13 @@ class MonitoringSystem:
 
             # Check if battery level is critically low and if tasks are currently running
             if self.bat.bat_percent_value < 2 and self.running_tasks:
-                print(f"{Fore.RED}Battery critically low. System shutdown initiated.")
+                self.bat_state = rb.Battery.state.ctit_low
                 self.running_tasks = False
                 self.stop_event.set()
 
             # Check if battery level has recovered and if tasks are not running
             elif self.bat.bat_percent_value >= 5 and not self.running_tasks:
-                print(f"{Fore.GREEN}Battery level recovered. Restarting system.")
+                self.bat_state = rb.Battery.state.normal
                 self.running_tasks = True
                 self.stop_event.clear()
                 await self.restart_tasks()
@@ -60,19 +60,19 @@ class MonitoringSystem:
                 await asyncio.sleep(0.2)
 
         except asyncio.CancelledError:
-            print(f"{Fore.MAGENTA}TOF sensors monitoring task was cancelled.")
-
+                pass
 
     async def monsys(self):
 
         while True:
-            print(f'Bat:{self.bat.bat_percent_value:.2f}%', end=' ')
-
+            self.msys_msg = []
+            self.msys_msg.append(self.bat_state)
+            self.msys_msg.append(self.bat.bat_percent_value)
+            
             for dsunit in self.distance_sensors:
-                print(f'DS{dsunit.name}:{dsunit.cur_value_ds}', end=' ')
+              self.msys_msg.append(dsunit.cur_value_ds)
 
-            print(end='\r')
-
+            yield self.msys_msg
             await asyncio.sleep(0.5)
 
 
@@ -82,14 +82,10 @@ class MonitoringSystem:
             self.ds_task = asyncio.create_task(self.ds_monitoring())
 
 
-    async def task_run(self, print_values:int=0):
+    async def task_run(self):
         # Launch battery and distance sensor monitoring tasks
         self.bat_task = asyncio.create_task(self.bat_monitoring())
         self.ds_task = asyncio.create_task(self.ds_monitoring())
-
-        if print_values == 1:
-            self.monsys_task = asyncio.create_task(self.monsys())
-
         # Await the battery monitoring task to complete
         await self.bat_task 
         # If the distance sensor task is not yet done, cancel it
@@ -97,9 +93,4 @@ class MonitoringSystem:
             self.ds_task.cancel()
         # Await the distance sensor task to handle cancellation properly
         await self.ds_task
-
-
-    def running(self):
-        # Run the main task launching function within an asyncio event loop
-        asyncio.run(self.task_run())
 
