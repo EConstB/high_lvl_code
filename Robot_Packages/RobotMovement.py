@@ -2,7 +2,7 @@ import keyboard
 import time
 import colorama
 from colorama import Fore
-
+import serial
 
 class RobotMovement:
     def __init__(self):
@@ -14,7 +14,14 @@ class RobotMovement:
         self.last_update_time = time.time()
         self.acceleration_rate = 400  # Speed change per update
         self.rotation_rate = 200  # Rotation change per update
-
+        
+        self.device = serial.Serial("COM9", 9600 )
+        try:
+            self.device.open()
+        except Exception as e:
+            pass
+        if self.device.is_open:
+            print('Dv open')
 
     def create_cmd(self):
         # Command format showing speed and rotation direction with angle
@@ -97,8 +104,11 @@ class RobotMovement:
                 self.last_update_time = current_time
                 time.sleep(0.05)
                 # Display command string
-                yield [self.straight_dir, self.straight_speed, self.rot_dir, self.rot_angle]
-                #print(f"{Fore.YELLOW}DIR {self.straight_dir} SPEED {self.straight_speed:5d}{Fore.GREEN} ROTDIR {self.rot_dir} ANGLE {self.rot_angle:4d}", end='\r')
+                #yield [self.straight_dir, self.straight_speed, self.rot_dir, self.rot_angle]
+                #cmd = 'Q1,200,0,0e'.encode('utf-8')
+                cmd = f'Q{self.straight_dir}, {self.straight_speed},{ self.rot_dir},{ self.rot_angle}e'.encode('utf-8')
+                self.device.write(cmd)
+                self.device.readline()
                 if keyboard.is_pressed('esc'):
                     print(f"{Fore.RED}\nExiting...")
                     break
@@ -107,4 +117,5 @@ class RobotMovement:
         except KeyboardInterrupt:
             print("\nProgram exited by user.")
 
-
+rm = RobotMovement()
+rm.teleOp()
