@@ -1,14 +1,15 @@
-from Robot_Packages.Robot_state_parameters import RobotParameters
+from Robot_Packages.Robot_state_parameters import RobotParameters as robpar
 
 
-class BatteryUnit(RobotParameters.Battery):
+class BatteryUnit(robpar.Battery):
 
     def __init__(self, max_v=None, min_v=None) -> None:
         super().__init__()
-        self.bat_max_volt = max_v
-        self.bat_min_volt = min_v
-        self.bat_curr_volt: float = None
+        self.bat_max_volt = robpar.Battery.bat_max_volt
+        self.bat_min_volt = robpar.Battery.bat_min_volt
+        self.bat_curr_volt: float = self.bat_max_volt
         self.bat_percent_value: float = None
+        self.bat_state = robpar.Battery.state.normal
 
     def get_bat_data(self, curr_value):
         ...

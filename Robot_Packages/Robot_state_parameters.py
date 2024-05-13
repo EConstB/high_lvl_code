@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class RobotParameters:
     class Battery:
-        bat_max_volt: float = 36.0  # example -> 36.00 is MAX (V)
+        bat_max_volt: float = 37.0  # example -> 36.00 is MAX (V)
         bat_min_volt: float = 28.0  # example -> 32.00 is MIN (V)
         bat_curr_volt: float  
 
@@ -30,9 +30,14 @@ class RobotParameters:
     class MotorWheels:
         wheel_radius: float = 165
         dist_between_wheels: float
-        max_rpm: int = 4000
-        min_rpm: int = 280
-        curr_rpm: int
+        
+        max_speed: int = 600
+        min_speed: int = 100
+        max_steer: int = 600
+
+        teleop_forward_speed: int = 400
+        teleop_backward_speed: int = 200
+        teleop_steer_speed: int = 600
 
     class DistanceSensor:
         max_distance_ds: float = 200
